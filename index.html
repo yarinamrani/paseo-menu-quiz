@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>מבחן תפריט פסאו</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive: #5B7A5E;
+    --olive-dark: #3d5340;
+    --gold: #C4A265;
+    --gold-light: #d4b87a;
+    --cream: #F5F0E8;
+    --cream-dark: #e8e0d2;
+    --charcoal: #2a2a2a;
+    --correct: #4a8c5c;
+    --wrong: #c0392b;
+    --bg: #faf8f4;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Heebo', sans-serif;
+    background: var(--bg);
+    color: var(--charcoal);
+    min-height: 100vh;
+  }
+
+  .app {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 20px;
+    padding-bottom: 40px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    padding: 40px 20px 30px;
+    margin-bottom: 30px;
+    background: linear-gradient(135deg, var(--olive) 0%, var(--olive-dark) 100%);
+    border-radius: 20px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -30%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(196,162,101,0.15) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .header h1 {
+    font-family: 'Rubik', sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+    letter-spacing: -0.5px;
+  }
+  .header .subtitle {
+    font-size: 0.95rem;
+    opacity: 0.85;
+    font-weight: 300;
+  }
+
+  /* Progress bar */
+  .progress-container {
+    background: var(--cream);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .progress-bar-bg {
+    flex: 1;
+    height: 8px;
+    background: var(--cream-dark);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--olive), var(--gold));
+    border-radius: 4px;
+    transition: width 0.5s ease;
+  }
+  .progress-text {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--olive-dark);
+    white-space: nowrap;
+    min-width: 60px;
+    text-align: center;
+  }
+
+  /* Question card */
+  .question-card {
+    background: white;
+    border-radius: 16px;
+    padding: 28px 24px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+    margin-bottom: 20px;
+    animation: slideIn 0.35s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .question-category {
+    display: inline-block;
+    background: var(--cream);
+    color: var(--olive-dark);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+    letter-spacing: 0.3px;
+  }
+  .question-text {
+    font-family: 'Rubik', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 600;
+    line-height: 1.7;
+    margin-bottom: 22px;
+    color: var(--charcoal);
+  }
+
+  /* Options */
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .option-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 14px 18px;
+    background: var(--bg);
+    border: 2px solid transparent;
+    border-radius: 12px;
+    font-family: 'Heebo', sans-serif;
+    font-size: 0.95rem;
+    color: var(--charcoal);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: right;
+    line-height: 1.5;
+  }
+  .option-btn:hover:not(.disabled) {
+    border-color: var(--gold-light);
+    background: var(--cream);
+  }
+  .option-letter {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--cream);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: var(--olive);
+    transition: all 0.2s ease;
+  }
+  .option-btn.selected-correct {
+    border-color: var(--correct);
+    background: #edf7ef;
+  }
+  .option-btn.selected-correct .option-letter {
+    background: var(--correct);
+    color: white;
+  }
+  .option-btn.selected-wrong {
+    border-color: var(--wrong);
+    background: #fdf0ee;
+  }
+  .option-btn.selected-wrong .option-letter {
+    background: var(--wrong);
+    color: white;
+  }
+  .option-btn.show-correct {
+    border-color: var(--correct);
+    background: #edf7ef;
+  }
+  .option-btn.show-correct .option-letter {
+    background: var(--correct);
+    color: white;
+  }
+  .option-btn.disabled { cursor: default; opacity: 0.7; }
+  .option-btn.disabled.selected-correct,
+  .option-btn.disabled.selected-wrong,
+  .option-btn.disabled.show-correct { opacity: 1; }
+
+  /* Explanation */
+  .explanation {
+    margin-top: 18px;
+    padding: 14px 18px;
+    background: var(--cream);
+    border-radius: 12px;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: var(--olive-dark);
+    border-right: 4px solid var(--gold);
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; } to { opacity: 1; }
+  }
+
+  /* Navigation */
+  .nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Heebo', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 8px;
+  }
+  .nav-btn.primary {
+    background: var(--olive);
+    color: white;
+  }
+  .nav-btn.primary:hover { background: var(--olive-dark); }
+  .nav-btn.secondary {
+    background: var(--cream);
+    color: var(--olive-dark);
+  }
+  .nav-btn.secondary:hover { background: var(--cream-dark); }
+  .nav-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+  }
+
+  /* Results */
+  .results-card {
+    background: white;
+    border-radius: 20px;
+    padding: 36px 28px;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+    text-align: center;
+    animation: slideIn 0.4s ease;
+  }
+  .score-circle {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    margin: 0 auto 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Rubik', sans-serif;
+    border: 6px solid;
+  }
+  .score-circle.pass {
+    border-color: var(--correct);
+    background: #edf7ef;
+    color: var(--correct);
+  }
+  .score-circle.fail {
+    border-color: var(--wrong);
+    background: #fdf0ee;
+    color: var(--wrong);
+  }
+  .score-number { font-size: 2.5rem; font-weight: 900; line-height: 1; }
+  .score-label { font-size: 0.8rem; font-weight: 500; margin-top: 4px; }
+  .results-title {
+    font-family: 'Rubik', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .results-subtitle {
+    font-size: 0.95rem;
+    color: #777;
+    margin-bottom: 28px;
+    line-height: 1.6;
+  }
+
+  /* Category breakdown */
+  .category-breakdown {
+    text-align: right;
+    margin: 24px 0;
+    padding: 20px;
+    background: var(--bg);
+    border-radius: 14px;
+  }
+  .category-breakdown h3 {
+    font-size: 0.95rem;
+    margin-bottom: 14px;
+    color: var(--olive-dark);
+  }
+  .cat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 0.9rem;
+    border-bottom: 1px solid var(--cream-dark);
+  }
+  .cat-row:last-child { border-bottom: none; }
+  .cat-score { font-weight: 700; }
+  .cat-score.good { color: var(--correct); }
+  .cat-score.bad { color: var(--wrong); }
+
+  /* Start screen */
+  .start-card {
+    background: white;
+    border-radius: 20px;
+    padding: 36px 28px;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+    text-align: center;
+  }
+  .start-card h2 {
+    font-family: 'Rubik', sans-serif;
+    font-size: 1.3rem;
+    margin-bottom: 16px;
+  }
+  .start-info {
+    display: flex;
+    justify-content: center;
+    gap: 28px;
+    margin: 20px 0 28px;
+    flex-wrap: wrap;
+  }
+  .info-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .info-num {
+    font-family: 'Rubik', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--olive);
+  }
+  .info-label { font-size: 0.8rem; color: #888; }
+
+  .topics-list {
+    text-align: right;
+    margin: 0 auto 24px;
+    max-width: 320px;
+  }
+  .topic-tag {
+    display: inline-block;
+    background: var(--cream);
+    color: var(--olive-dark);
+    font-size: 0.8rem;
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin: 3px;
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+
+<script>
+const QUESTIONS = [
+  // === אלרגנים וכשרות ===
+  {
+    category: "אלרגנים וכשרות",
+    question: "לקוח שואל אם המטבח נקי מגלוטן. מה התשובה הנכונה?",
+    options: [
+      "כן, נקי לחלוטין מכל אלרגן",
+      "רק מנות הסושי בטוחות לצליאקים",
+      "אין שום אופציה ללקוחות רגישים",
+      "לא נקי מאלרגנים, אך יש לחם ללא גלוטן בתוספת תשלום"
+    ],
+    correct: 3,
+    explanation: "המטבח אינו נקי מאלרגנים (אגוזים, גלוטן וכו'). יש לחם ללא גלוטן בתוספת תשלום. חשוב לשקף ללקוח ולוודא שהאלרגיה אינה מסכנת חיים — אם כן, לפנות למנהל משמרת."
+  },
+  {
+    category: "אלרגנים וכשרות",
+    question: "לקוח צליאקי מזמין צ'יפס. מה חשוב לציין?",
+    options: [
+      "הצ'יפס מטוגן בציפסר לא סטרילי מגלוטן",
+      "הצ'יפס ללא גלוטן, אפשר להגיש",
+      "הצ'יפס מכיל גלוטן בציפוי שלו",
+      "צ'יפס לא קיים בתפריט שלנו"
+    ],
+    correct: 0,
+    explanation: "הצ'יפס מטוגן בציפסר שהוא אינו סטרילי מגלוטן. גם קריספי בטטה באים במגע עם גלוטן."
+  },
+  {
+    category: "אלרגנים וכשרות",
+    question: "לקוח צליאקי רוצה קוקטייל. מה האופציה היחידה ללא גלוטן?",
+    options: [
+      "אפרול שפריץ — על בסיס קאווה",
+      "פאשן ג'ין — על בסיס ג'ין",
+      "קוקטייל ללא אלכוהול",
+      "כל הקוקטיילים מתאימים לצליאקים"
+    ],
+    correct: 2,
+    explanation: "כל הקוקטיילים מכילים גלוטן (סוגי אלכוהול שונים או מחיות להשריה). הקוקטייל היחיד ללא גלוטן הוא קוקטייל ללא אלכוהול."
+  },
+  {
+    category: "אלרגנים וכשרות",
+    question: "לקוח מזמין קרפצ'יו בקר ופלאפל כרובית. מה חשוב לבדוק מולו?",
+    options: [
+      "שהוא מעדיף את הבשר צרוב או נא",
+      "שאין לו בעיה עם בשר וחלב ביחד",
+      "שהוא רוצה לחם לצד ההזמנה",
+      "שהוא לא רגיש לאגוזים כלשהם"
+    ],
+    correct: 1,
+    explanation: "כשלקוח מזמין מנות בשריות וחלביות יחד (לרוב ראשונות), יש לוודא שאין לו בעיה עם שילוב בשר וחלב. הפלאפל כרובית הוא מנה חלבית."
+  },
+  {
+    category: "אלרגנים וכשרות",
+    question: "איזה קינוח מכיל אגוזים ויש לציין זאת ללקוח?",
+    options: [
+      "קרם ברולה",
+      "טירמיסו די פסאו",
+      "פונדנט קינדר",
+      "פרלינה שוקולד טבעוני"
+    ],
+    correct: 2,
+    explanation: "פונדנט קינדר מוגש עם רוטב פיסטוק — *מכיל אגוזים*. חשוב לציין זאת ללקוח."
+  },
+
+  // === דגים נאים ===
+  {
+    category: "דגים נאים",
+    question: "מה חשוב לומר ללקוח שמזמין סשימי סלמון?",
+    options: [
+      "שהדג מבושל לגמרי וללא עצמות",
+      "שמדובר בדג לבן ולא סלמון",
+      "שהדג צרוב בברנר למעלה — נא ברובו",
+      "שהמנה מגיעה כבר עם לחם הבית"
+    ],
+    correct: 2,
+    explanation: "הסשימי סלמון עובר צריבה עם ברנר למעלה שנותן טעם מעושן. הדג נשאר נא ברובו ורק בטופ הוא צרוב קלות. יש לציין זאת ללקוח."
+  },
+  {
+    category: "דגים נאים",
+    question: "מנות הדגים הנאים (סטאקי טונה, סשימי סלמון, סביצ'ה) — מה חשוב להציע?",
+    options: [
+      "להוסיף לחם הבית",
+      "ציפס אמריקאי בצד",
+      "יין אדום משובח לצד",
+      "סלט קיסר כתוספת"
+    ],
+    correct: 0,
+    explanation: "כל מנות הדגים הנאים מגיעות בלי לחם. יש להציע ללקוח תמיד להוסיף לחם הבית."
+  },
+  {
+    category: "דגים נאים",
+    question: "מהו 'פאני פורי' ומה חשוב לדעת עליו?",
+    options: [
+      "רול סושי מיוחד של אומינו",
+      "סוג של לחם שטוח הודי",
+      "סלט דגים קר ללא גלוטן",
+      "חטיף מטוגן הודי שמכיל גלוטן"
+    ],
+    correct: 3,
+    explanation: "פאני הם כדורים מטוגנים מהמטבח ההודי — חטיף מטוגן שמכיל גלוטן. הם ממולאים בסביצ'ה סלמון, קליפת מלפפון, בצל סגול, כוסברה, צ'ילי אדום ופרש יוזו."
+  },
+
+  // === ראשונות ===
+  {
+    category: "ראשונות",
+    question: "לקוח הזמין צלעות תירס. מה לעשות מיד אחרי לקיחת ההזמנה?",
+    options: [
+      "להביא סלט לשולחן",
+      "לשאול אם רוצה ציפס בצד",
+      "לשים מפיות, מגבונים וקיסמים בשולחן",
+      "להביא לחם הבית מראש"
+    ],
+    correct: 2,
+    explanation: "ברגע שסיימנו עם לקיחת ההזמנה של צלעות תירס, יש לשים בשולחן מראש מפיות/מגבונים וקיסמים בשביל המנה."
+  },
+  {
+    category: "ראשונות",
+    question: "לקוח מזמין ציפס אמריקאי. מה תמיד צריך לשאול?",
+    options: [
+      "אם רוצה ציפס בטטה במקום",
+      "אם רוצה מנה בגודל XL",
+      "אם רוצה קטשופ או מיונז",
+      "אם להוסיף פטה — תוספת 8 ש\"ח"
+    ],
+    correct: 3,
+    explanation: "תמיד לשאול את הלקוח אם רוצה להוסיף גבינת פטה (תוספת 8 ש\"ח) לציפס האמריקאי."
+  },
+  {
+    category: "ראשונות",
+    question: "פלאפל כרובית וכמהין — מה סוג המנה?",
+    options: [
+      "בשרית",
+      "חלבית — ממולא בגבינות",
+      "טבעונית מלאה",
+      "פרווה — ללא בשר וחלב"
+    ],
+    correct: 1,
+    explanation: "פלאפל כרובית וכמהין הוא מנה חלבית — 3 כדורים של כרובית מגורדת במילוי גבינות ושמן כמהין."
+  },
+
+  // === עיקריות ===
+  {
+    category: "עיקריות",
+    question: "לקוח מזמין סטייק אנטריקוט ומבקש Well Done. מה לעשות?",
+    options: [
+      "לקחת את ההזמנה ולהעביר למטבח",
+      "לסרב ולהציע Medium בלבד",
+      "להגיש Medium Well בלי לשאול",
+      "להסביר שלא מציעים WD כי אין נקודת אל חזור, אבל לכבד אם מתעקש"
+    ],
+    correct: 3,
+    explanation: "לא להציע WD כי זו מידה שאין ממנה נקודת אל חזור — לעומת MW שאפשר להחזיר לאש אם חי מדי. אם הלקוח עדיין בוחר WD, להסביר ולכבד."
+  },
+  {
+    category: "עיקריות",
+    question: "מהו המחיר לסטייק אנטריקוט?",
+    options: [
+      "69 ש\"ח ל-100 גרם, לפי משקל",
+      "מחיר קבוע של 250 ש\"ח",
+      "89 ש\"ח למנה רגילה",
+      "120 ש\"ח קבוע לכל גודל"
+    ],
+    correct: 0,
+    explanation: "מניפת אנטריקוט לפי משקל — 250/300/400 גרם לפי 69 ש\"ח ל-100 גרם."
+  },
+  {
+    category: "עיקריות",
+    question: "טורטייה פטריות — האם היא טבעונית?",
+    options: [
+      "כן, טבעונית לגמרי",
+      "כן, אבל רק בלי כל הרטבים",
+      "לא, בשרית — מכילה בשר",
+      "לא, צמחונית. אפשר להחליף איולי לטחינה ואז טבעונית"
+    ],
+    correct: 3,
+    explanation: "המנה עצמה צמחונית, לא טבעונית! ישנה אפשרות להחליף את האיולי לטחינה ואז המנה הופכת לטבעונית."
+  },
+  {
+    category: "עיקריות",
+    question: "אילו תוספות אפשר להוסיף לפיצה נפוליטנה ובכמה?",
+    options: [
+      "שום ובזיליקום — חינם",
+      "זיתים/פטריות/פטה/בצל/עגבניה — 8 ש\"ח",
+      "אין אופציה לתוספות כלל",
+      "רק פטריות בלבד — 12 ש\"ח"
+    ],
+    correct: 1,
+    explanation: "תוספות לפיצה: זיתים/פטריות/פטה/בצל/עגבניה — 8 ש\"ח לתוספת."
+  },
+
+  // === שינויים במנות ===
+  {
+    category: "שינויים במנות",
+    question: "לקוח רוצה פאני פורי בלי פרש יוזו. מה הנהלים?",
+    options: [
+      "לסרב — אי אפשר לשנות בכלל",
+      "לעשות בלי שום בעיה",
+      "להוסיף ממרח אחר במקום אוטומטית",
+      "להסביר שזה שינוי דרסטי שפוגע בטעם, ולא נוכל לבטל אם לא אהב"
+    ],
+    correct: 3,
+    explanation: "פאני פורי בלי פרש יוזו = שינוי דרסטי. זה משאיר את המנה בלי ממרח ועלול לפגוע בטעם. יש להסביר ללקוח שבשינויים דרסטיים לא נוכל להחזיר/לבטל את המנה."
+  },
+  {
+    category: "שינויים במנות",
+    question: "לקוח מבקש להוריד יותר מ-2 פריטים ממנה. האם קיימת בעייתיות?",
+    options: [
+      "לא, הלקוח תמיד צודק — להוריד מה שרוצה",
+      "רק אם זה מנה עיקרית, בראשונות אין בעיה",
+      "כן — זה פוגע בטעם המקורי, ולאחר ההורדה לא ניתן להחזיר/לבטל",
+      "רק אם מנהל משמרת מאשר את השינוי"
+    ],
+    correct: 2,
+    explanation: "הורדה של יותר מ-2 פריטים ממנה פוגעת בטעם המקורי שלה. יש להסביר ללקוח שלאחר הורדת המרכיבים לא יהיה ניתן להחזיר או לבטל את המנה."
+  },
+
+  // === סושי ===
+  {
+    category: "סושי",
+    question: "באילו ימים מוגש סושי?",
+    options: [
+      "חמישי עד שבת בלבד",
+      "ראשון, שישי ושבת",
+      "כל ימות השבוע",
+      "רק בסופ\"ש — שישי ושבת"
+    ],
+    correct: 1,
+    explanation: "הסושי מוגש בימים ראשון, שישי ושבת."
+  },
+  {
+    category: "סושי",
+    question: "לקוח מזמין ספיישל טרטר סלמון ורוצה את הדג אפוי. מה עונים?",
+    options: [
+      "ספיישל טרטר תמיד נא, אין אופציה אחרת",
+      "אין בעיה — נעשה אפוי",
+      "אפשר חצי אפוי חצי נא",
+      "נבדוק עם השף ונחזור"
+    ],
+    correct: 0,
+    explanation: "ספיישל טרטר תמיד יהיה נא — אין אפשרות לשנות. רולים עם סלמון אחרים כן אפשר לבחור אפוי או נא."
+  },
+  {
+    category: "סושי",
+    question: "האם אפשר לבקש דג אפוי ברולים עם דג לבן או טונה?",
+    options: [
+      "כן, כמו כל רול עם סלמון",
+      "רק ברולי טונה, לא דג לבן",
+      "לא — דג לבן וטונה תמיד נא, אין לשנות",
+      "רק אם הלקוח מבקש במפורש"
+    ],
+    correct: 2,
+    explanation: "כל הרולים המכילים דג לבן ודג טונה הם *דג נא* ואין אפשרות לשנות לדג אפוי. רק רולים עם סלמון אפשר לבחור אפוי או נא."
+  },
+  {
+    category: "סושי",
+    question: "לקוח צליאקי רוצה סושי. מה חשוב לבדוק?",
+    options: [
+      "האורז ללא גלוטן, אבל איולי, קריספי, ספייסי מיונז, טריאקי וסלמון אפוי כן מכילים",
+      "הסושי לא מתאים לצליאקים בשום צורה",
+      "הכל בסדר, אין גלוטן בסושי כלל",
+      "רק הרולים הצמחוניים בטוחים"
+    ],
+    correct: 0,
+    explanation: "האורז לא מכיל גלוטן, אבל מרכיבים שכן מכילים: כל איולי שהוא, קריספי בטטה/סלק, ספייסי מיונז, טריאקי, וגם סלמון אפוי (עובר בישול בטריאקי). יש אופציה לרוטב סויה ללא גלוטן."
+  },
+
+  // === קוקטיילים ===
+  {
+    category: "קוקטיילים",
+    question: "לקוח רוצה להוסיף/לחזק אלכוהול בקוקטייל. כמה זה עולה?",
+    options: [
+      "15 ש\"ח",
+      "10 ש\"ח",
+      "20 ש\"ח",
+      "חינם — כלול במחיר"
+    ],
+    correct: 0,
+    explanation: "תוספת אלכוהול / חיזוק לקוקטייל = 15 ש\"ח."
+  },
+  {
+    category: "קוקטיילים",
+    question: "לקוח מזמין אפרול שפריץ. מה חשוב לבדוק?",
+    options: [
+      "אם הוא מכיר — אם לא, לציין שזה מריר",
+      "אם רוצה קרח או בלי",
+      "אם רוצה תוספת סודה נוספת",
+      "אם רוצה פלח לימון בצד"
+    ],
+    correct: 0,
+    explanation: "כשלקוח מזמין אפרול שפריץ, לוודא אם הוא מכיר את הקוקטייל. אם לא — לציין שזה קוקטייל מריר (על בסיס אפרול, קאווה וסודה)."
+  },
+  {
+    category: "קוקטיילים",
+    question: "לקוח מבקש להחליף מרכיב בקוקטייל (לא רק חמוץ/מתוק). מה עונים?",
+    options: [
+      "רק בקוקטיילים ללא אלכוהול אפשר",
+      "אין שינויים מלבד חמוץ/מתוק יותר",
+      "אין בעיה, הברמן שלנו יתאים",
+      "רק אם המנהל מאשר את הבקשה"
+    ],
+    correct: 1,
+    explanation: "כל הקוקטיילים מוכנים מ-0 ועוברים השריות — אין אופציה לשינויים של מרכיבים, רק חמוץ יותר / מתוק יותר."
+  },
+
+  // === בראנץ' ===
+  {
+    category: "בראנץ'",
+    question: "מתי מוגש הבראנץ'?",
+    options: [
+      "כל יום 8:00–13:00",
+      "שישי ושבת בוקר, 9:30–12:45",
+      "רק שבת 10:00–14:00",
+      "חמישי-שבת 9:00–13:00"
+    ],
+    correct: 1,
+    explanation: "הבראנץ' מוגש בימים שישי ושבת בוקר מ-9:30 עד 12:45."
+  },
+  {
+    category: "בראנץ'",
+    question: "מה כלול בארוחת בוקר זוגית/יחיד?",
+    options: [
+      "2 ביצים, סלסלת לחמים, סלטים, ממרחים + שתייה",
+      "בחירה חופשית מכל התפריט",
+      "ביצים, לחם וקפה בלבד",
+      "3 ביצים, לחמנייה וגבינה צהובה"
+    ],
+    correct: 0,
+    explanation: "ארוחת בוקר כוללת: 2 ביצים לבחירה, סלסלת לחמים, סלט עלים, סלט טונה, פטה, גבינת שמנת וסומק, חמאה, קונפיטורת תות, גוואקמולי, לאבנה וזעתר, + שתייה חמה/קלה."
+  },
+
+  // === קינוחים ===
+  {
+    category: "קינוחים",
+    question: "לקוח רגיש לגלוטן מזמין פאדג' שוקולד. מה חשוב לדעת?",
+    options: [
+      "הכל ללא גלוטן, אפשר להגיש",
+      "המנה לא מתאימה לו בכלל",
+      "רק הגלידה מכילה גלוטן",
+      "העוגה בלי גלוטן, אבל הקראמבל כן — אפשר בלי"
+    ],
+    correct: 3,
+    explanation: "פאדג' שוקולד = עוגת שוקולד חמה + גלידת וניל + קראמבל עוגיות. העוגה עצמה לא מכילה גלוטן, אבל יש אפשרות לבקש בלי קראמבל לרגישים."
+  },
+
+  // === כללי ===
+  {
+    category: "כללי",
+    question: "מהו 'טוביקו'?",
+    options: [
+      "תבלין יפני חריף",
+      "ביצי דגים כשרים",
+      "רוטב סויה מיוחד",
+      "סוג של אצה ימית"
+    ],
+    correct: 1,
+    explanation: "טוביקו = ביצי דגים כשרים. מופיע בכמה רולים בתפריט הסושי."
+  },
+  {
+    category: "כללי",
+    question: "מהו 'טוגראשי'?",
+    options: [
+      "סוג של דג ים תיכוני",
+      "תבלין צ'ילי יפני",
+      "רוטב מתוק לסושי",
+      "ירק כבוש יפני"
+    ],
+    correct: 1,
+    explanation: "טוגראשי = תבלין צ'ילי יפני. מופיע בסטאקי טונה ווואסבי, סשימי סלמון, וספייסי טונה."
+  }
+];
+
+// Shuffle helper
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+const letters = ['א', 'ב', 'ג', 'ד'];
+
+let state = {
+  screen: 'start', // start | quiz | results
+  questions: [],
+  current: 0,
+  answers: [], // { selected, correct }
+  answered: false,
+};
+
+function init() {
+  state.questions = shuffle(QUESTIONS);
+  state.current = 0;
+  state.answers = [];
+  state.answered = false;
+  state.screen = 'start';
+  render();
+}
+
+function startQuiz() {
+  state.screen = 'quiz';
+  render();
+}
+
+function selectAnswer(idx) {
+  if (state.answered) return;
+  state.answered = true;
+  const q = state.questions[state.current];
+  state.answers.push({ selected: idx, correct: q.correct });
+  render();
+}
+
+function nextQuestion() {
+  if (state.current < state.questions.length - 1) {
+    state.current++;
+    state.answered = false;
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else {
+    state.screen = 'results';
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+function restart() {
+  init();
+  startQuiz();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function render() {
+  const app = document.getElementById('app');
+  if (state.screen === 'start') {
+    renderStart(app);
+  } else if (state.screen === 'quiz') {
+    renderQuiz(app);
+  } else {
+    renderResults(app);
+  }
+}
+
+function renderStart(app) {
+  const categories = [...new Set(QUESTIONS.map(q => q.category))];
+  app.innerHTML = `
+    <div class="header">
+      <h1>מבחן תפריט פסאו</h1>
+      <div class="subtitle">למלצרים וברמנים חדשים</div>
+    </div>
+    <div class="start-card">
+      <h2>מוכנים לבדוק את הידע? 🍽️</h2>
+      <div class="start-info">
+        <div class="info-item">
+          <div class="info-num">${QUESTIONS.length}</div>
+          <div class="info-label">שאלות</div>
+        </div>
+        <div class="info-item">
+          <div class="info-num">80%</div>
+          <div class="info-label">ציון עובר</div>
+        </div>
+        <div class="info-item">
+          <div class="info-num">${categories.length}</div>
+          <div class="info-label">נושאים</div>
+        </div>
+      </div>
+      <div class="topics-list">
+        ${categories.map(c => `<span class="topic-tag">${c}</span>`).join('')}
+      </div>
+      <button class="nav-btn primary" onclick="startQuiz()">התחל מבחן ←</button>
+    </div>
+  `;
+}
+
+function renderQuiz(app) {
+  const q = state.questions[state.current];
+  const total = state.questions.length;
+  const progress = ((state.current + (state.answered ? 1 : 0)) / total) * 100;
+
+  let optionsHtml = q.options.map((opt, i) => {
+    let cls = 'option-btn';
+    if (state.answered) {
+      cls += ' disabled';
+      if (i === state.answers[state.current]?.selected && i === q.correct) {
+        cls += ' selected-correct';
+      } else if (i === state.answers[state.current]?.selected && i !== q.correct) {
+        cls += ' selected-wrong';
+      } else if (i === q.correct) {
+        cls += ' show-correct';
+      }
+    }
+    return `<button class="${cls}" onclick="selectAnswer(${i})">
+      <span class="option-letter">${letters[i]}</span>
+      <span>${opt}</span>
+    </button>`;
+  }).join('');
+
+  let explanationHtml = '';
+  if (state.answered) {
+    const isCorrect = state.answers[state.current].selected === q.correct;
+    explanationHtml = `
+      <div class="explanation">
+        <strong>${isCorrect ? '✅ נכון!' : '❌ לא נכון.'}</strong><br>
+        ${q.explanation}
+      </div>
+    `;
+  }
+
+  let navHtml = '';
+  if (state.answered) {
+    const isLast = state.current === total - 1;
+    navHtml = `
+      <div class="nav-row">
+        <button class="nav-btn primary" onclick="nextQuestion()">
+          ${isLast ? 'לתוצאות' : 'שאלה הבאה'} ←
+        </button>
+        <span style="font-size:0.85rem;color:#999;">${state.current + 1} / ${total}</span>
+      </div>
+    `;
+  }
+
+  app.innerHTML = `
+    <div class="header">
+      <h1>מבחן תפריט פסאו</h1>
+      <div class="subtitle">למלצרים וברמנים חדשים</div>
+    </div>
+    <div class="progress-container">
+      <div class="progress-text">${state.current + 1} / ${total}</div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" style="width:${progress}%"></div>
+      </div>
+    </div>
+    <div class="question-card">
+      <span class="question-category">${q.category}</span>
+      <div class="question-text">${q.question}</div>
+      <div class="options">${optionsHtml}</div>
+      ${explanationHtml}
+      ${navHtml}
+    </div>
+  `;
+}
+
+function renderResults(app) {
+  const total = state.questions.length;
+  const correct = state.answers.filter(a => a.selected === a.correct).length;
+  const pct = Math.round((correct / total) * 100);
+  const passed = pct >= 80;
+
+  // Category breakdown
+  const catMap = {};
+  state.questions.forEach((q, i) => {
+    if (!catMap[q.category]) catMap[q.category] = { total: 0, correct: 0 };
+    catMap[q.category].total++;
+    if (state.answers[i] && state.answers[i].selected === q.correct) {
+      catMap[q.category].correct++;
+    }
+  });
+
+  let catHtml = Object.entries(catMap).map(([cat, data]) => {
+    const catPct = Math.round((data.correct / data.total) * 100);
+    return `<div class="cat-row">
+      <span>${cat}</span>
+      <span class="cat-score ${catPct >= 75 ? 'good' : 'bad'}">${data.correct}/${data.total} (${catPct}%)</span>
+    </div>`;
+  }).join('');
+
+  app.innerHTML = `
+    <div class="header">
+      <h1>מבחן תפריט פסאו</h1>
+      <div class="subtitle">תוצאות</div>
+    </div>
+    <div class="results-card">
+      <div class="score-circle ${passed ? 'pass' : 'fail'}">
+        <div class="score-number">${pct}%</div>
+        <div class="score-label">${correct} מתוך ${total}</div>
+      </div>
+      <div class="results-title">${passed ? 'עברת בהצלחה! 🎉' : 'צריך עוד תרגול 📚'}</div>
+      <div class="results-subtitle">
+        ${passed
+          ? 'מוכן/ה להתחיל התלמדות. יש לחזור על הנושאים שטעית בהם.'
+          : 'ציון עובר הוא 80%. יש לחזור על החומר ולנסות שוב.'}
+      </div>
+      <div class="category-breakdown">
+        <h3>פירוט לפי נושאים:</h3>
+        ${catHtml}
+      </div>
+      <button class="nav-btn primary" onclick="restart()">נסה שוב ←</button>
+    </div>
+  `;
+}
+
+init();
+</script>
+</body>
+</html>
